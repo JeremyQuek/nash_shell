@@ -1,7 +1,7 @@
 wip...
 
 <div align=center>
-  <h1 style="margin: 0;"> 🚀 Nash Shell </h1>
+  <h1 style="margin: 0;"> 🚀 NASH </h1>
 </div>
 
 <div align="center">

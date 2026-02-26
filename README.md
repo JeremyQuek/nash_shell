@@ -14,3 +14,5 @@ wip...
 </div>
 
 A shell design inspired from CS 162. Implements REPL architecture "Read-Eval-Print Loop" and Unix standards according to Bash and Zsh. 
+
+Obviously, this isn't the most pristing piece of code I've written, and I learned that there's insanely more depth and complexity to a shell than I can imagine. But at least I enjoyed doing it, learned alot about system calls, pipes & fds and it works (🙏 on my hardware).

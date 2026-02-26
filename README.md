@@ -2,14 +2,15 @@ wip...
 
 <div align=center>
   <h1 style="margin: 0;"> 🚀 NASH    
-    <img width="40" alt="image" src="https://github.com/user-attachments/assets/3c84286e-9154-4326-bcd0-0277b134f9f6" />
-    <img width="40"  alt="image" src="https://github.com/user-attachments/assets/e1d15ced-4ae0-4436-8ca2-130e87180653" />
   </h1>
 </div>
 
 
+
 <div align="center">
-  <p>(<b>N</b>o-one-<b>A</b>sked-for-it <b>Sh</b>ell)</p>
+      <img width="40" alt="image" src="https://github.com/user-attachments/assets/3c84286e-9154-4326-bcd0-0277b134f9f6" />
+    <img width="40"  alt="image" src="https://github.com/user-attachments/assets/e1d15ced-4ae0-4436-8ca2-130e87180653" />
+   <p>(<b>N</b>o-one-<b>A</b>sked-for-it <b>Sh</b>ell)</p>
 </div>
 
 <div align=center>

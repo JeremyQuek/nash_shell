@@ -19,8 +19,8 @@ void Tokenizer::tokenize() {
     }
 }
 
-void Tokenizer::ctokenize() {
-    if (argv) return; 
+char** Tokenizer::ctokenize() {
+    if (argv) return argv; 
     tokenize();
 
 
@@ -31,6 +31,7 @@ void Tokenizer::ctokenize() {
         strcpy(argv[i], input_tokens[i].c_str());
     }
     argv[argc] = nullptr; 
+    return argv;
 }
 
 

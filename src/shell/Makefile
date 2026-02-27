@@ -2,7 +2,7 @@
 CXX      := g++
 CXXFLAGS := -std=c++17 -O3 -Wall
 
-FILES := builtin.cpp tokenizer.cpp command_helper.cpp
+FILES := builtin.cpp tokenizer.cpp command_table.cpp
 
 TARGET := shell
 $(TARGET): main.cpp

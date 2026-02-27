@@ -14,7 +14,7 @@ public:
     Tokenizer(const std::string& input);
 
     void tokenize();
-    void ctokenize();
+    char** ctokenize();
     
     ~Tokenizer();
 };

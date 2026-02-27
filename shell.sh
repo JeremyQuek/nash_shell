@@ -45,8 +45,12 @@ else
     echo "Shell binary already exists. Skipping compilation (use -c to force)."
 fi
 
+
+echo $PATH > ./system/sys_path
+hash > ./system/hash_table
+
 # 3. npm i && start
-cd ../pseudo_terminal || exit
+cd ../../pseudo_terminal || exit
 npm i -s
 echo "Spawning NASH terminal..."
-npm start
+npm start & cd ../

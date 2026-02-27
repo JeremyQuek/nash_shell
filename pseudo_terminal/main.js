@@ -4,7 +4,7 @@ const path = require("path");
 
 let mainWindow;
 let shellProc;
-let shellBin = "../shell/shell";
+let shellBin = "../src/shell/shell";
 
 const os = require("os"); // Add this at the top
 
@@ -27,6 +27,12 @@ function createWindow() {
   shellProc = spawn(shellBin);
 
   shellProc.stdout.on("data", (data) => {
+    mainWindow.webContents.send("proc-output", data.toString());
+  });
+
+  
+  shellProc.stderr.on("data", (data) => {
+    // We send it to the same "proc-output" channel so it shows up in your terminal UI
     mainWindow.webContents.send("proc-output", data.toString());
   });
 

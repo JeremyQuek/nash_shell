@@ -28,6 +28,8 @@ void init_table(table& cmd_table) {
 
     register_cmd(cmd_table, "echo", echo_command, "Prints input to console");
 
+    register_cmd(cmd_table, "which", which_command, "Shows the shell path");
+
     register_cmd(cmd_table, "cd", cd_command, "Change directory");
 
     register_cmd(cmd_table, "help", [&cmd_table](const std::vector<std::string>&) {

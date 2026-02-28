@@ -7,10 +7,15 @@
 
 #include "builtin.h"
 #include "tokenizer.h"
+#include "command_table.h"
+#include "./system/subprocess.h"
 
 using namespace std;
 namespace fs = filesystem;
 extern fs::path WORK_DIR;
+
+extern unordered_map<string, Cmd> cmd_table;         //builtin commands
+extern unordered_map<string, string> hash_table;    //paths string since we validate it on initialisation
 
 void pwd_command() {
     cout << WORK_DIR.string() << endl;
@@ -18,6 +23,29 @@ void pwd_command() {
 
 void echo_command(const string& input) {
     cout<<input.substr(5,input.size()-5)<<endl;
+}
+
+void which_command(const vector<string>& input) {
+    string cmd = input[1];
+    auto it = cmd_table.find(cmd);
+    if (it != cmd_table.end()) {
+        cout << cmd << ": shell built-in command" << endl;
+        return;
+    }
+
+    auto table_it = hash_table.find(cmd);
+    if (table_it != hash_table.end()) {
+        cout << table_it->second << endl;
+        return;
+    }
+
+    string found_cmd;
+    if (resolve_path(cmd, found_cmd)) {
+        cout << found_cmd << endl;
+        return;
+    }
+
+    cout << "[SYSTEM_ERR] COMMAND NOT FOUND: " << cmd << endl;
 }
 
 void cd_command(const vector<string>& input) {

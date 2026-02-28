@@ -29,7 +29,7 @@ if ! command -v g++ &>/dev/null; then
     exit 1
 fi
  
-(
+
 # 2. Handle Compilation
 cd ./src/shell || exit
 # Delete file is force recompile
@@ -46,15 +46,14 @@ if [ ! -f "./shell" ]; then
 else
     echo "Shell binary already exists. Skipping compilation (use -c to force)."
 fi
-)
 
+cd ../../
 echo $PATH > ./src/shell/system/sys_path.alias
 hash > ./src/shell/system/hash_table.alias
 
-(
+
 # 3. npm i && start
 cd ./pseudo_terminal || exit
 npm i -s
 echo "Spawning NASH terminal..."
 npm start & cd ../
-)

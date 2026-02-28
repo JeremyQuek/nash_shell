@@ -3,6 +3,6 @@
 
 #include <string>
 
-bool start_process(std::string& cmd, char** argv); 
-
+void start_process(std::string& executable_path, char** args); 
+bool resolve_path(std::string& cmd, std::string& executable_path);
 #endif

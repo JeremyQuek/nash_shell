@@ -41,7 +41,7 @@ void load_cache(){
         int idx = line.find('=');
         if (idx != string::npos) {
             string executable_cmd(line.substr(0, idx));
-            string executable_path(line.substr(idx+2));
+            string executable_path(line.substr(idx+1));
             hash_table[executable_cmd] = executable_path;
         }
     }
@@ -70,7 +70,7 @@ void load_paths() {
         } catch (const fs::filesystem_error& e) {
             continue; 
         }
-        
+  
     }
     file.close();
 }

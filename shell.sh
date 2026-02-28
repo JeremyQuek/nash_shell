@@ -48,8 +48,8 @@ else
 fi
 )
 
-echo $PATH > ./src/shell/system/sys_path.txt
-hash > ./src/shell/system/hash_table.txt
+echo $PATH > ./src/shell/system/sys_path.alias
+hash > ./src/shell/system/hash_table.alias
 
 (
 # 3. npm i && start

@@ -30,7 +30,7 @@ void init_sys_cache() {
 }
 
 void load_cache(){
-    ifstream file("../src/shell/system/hash_table.txt");
+    ifstream file("../src/shell/system/hash_table.alias");
     if (!file.is_open()) {
         cerr << "Could not read source shell hash file!" << endl;
         return;
@@ -51,7 +51,7 @@ void load_cache(){
 //todo fix shell env path
 
 void load_paths() {
-    std::ifstream file("../src/shell/system/sys_path.txt");
+    std::ifstream file("../src/shell/system/sys_path.alias");
     if (!file.is_open()) {
         cerr << "Could not read source shell sys path!" << endl;
         return;

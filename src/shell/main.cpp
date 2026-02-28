@@ -9,20 +9,28 @@
 #include "builtin.h"
 #include "tokenizer.h"
 #include "command_table.h"
+#include "system/sys_setup.h"
+#include "system/subprocess.h"
 
+// Set namespace
 using namespace std;
 namespace fs = filesystem;
 
+// Initialise globals
 extern "C" char **environ;
 fs::path WORK_DIR = fs::current_path();
-unordered_map<string, Cmd> cmd_table;
+unordered_map<string, Cmd> cmd_table;         //builtin commands
+vector<fs::path> sys_paths;                  //paths as std::fs::path cause we need to validate dynamic path
+unordered_map<string, string> hash_table;    //paths string since we validate it on initialisation
 
 int main() {setvbuf(stdout, NULL, _IONBF, 0);   
     init_table(cmd_table);
+    init_sys_cache();
 
     string line;
     while (true) {
         if (!getline(cin, line)) break;  
+
         Tokenizer tok(line);
         tok.ctokenize();
         vector<string>& tokens = tok.input_tokens;
@@ -137,12 +145,12 @@ int main() {setvbuf(stdout, NULL, _IONBF, 0);
             cout<<endl;
             continue;
         }
-
         auto it = cmd_table.find(cmd);
         if (it != cmd_table.end()) {
             it->second.handler(tok);
         } else {
             cout << "[SYSTEM_ERR] UNKNOWN SIGNAl:" << cmd << endl;
+            
         }
         cout<<"\0";
     }

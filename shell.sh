@@ -3,6 +3,8 @@
 # Default: do not force recompile
 RECOMPILE=false
 
+OPTIND=1
+
 #Parse flags
 while getopts "c" opt; do
   case $opt in
@@ -26,10 +28,10 @@ if ! command -v g++ &>/dev/null; then
     echo "Error: g++ is not installed."
     exit 1
 fi
-
+ 
+(
 # 2. Handle Compilation
 cd ./src/shell || exit
-
 # Delete file is force recompile
 if [ "$RECOMPILE" = true ] && [ -f "./shell" ]; then
     echo "Force flag detected. Cleaning old binary..."
@@ -44,13 +46,15 @@ if [ ! -f "./shell" ]; then
 else
     echo "Shell binary already exists. Skipping compilation (use -c to force)."
 fi
+)
 
+echo $PATH > ./src/shell/system/sys_path.txt
+hash > ./src/shell/system/hash_table.txt
 
-echo $PATH > ./system/sys_path
-hash > ./system/hash_table
-
+(
 # 3. npm i && start
-cd ../../pseudo_terminal || exit
+cd ./pseudo_terminal || exit
 npm i -s
 echo "Spawning NASH terminal..."
 npm start & cd ../
+)

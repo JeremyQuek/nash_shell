@@ -1,0 +1,125 @@
+
+### The "Legit TTY" Architecture
+
+In Linux, a terminal is a pair of file descriptors:
+
+1. **PTY Master:** Your Electron Backend holds this. You read/write to it.
+2. **PTY Slave:** Your Shell Process is attached to this. It thinks it's a real hardware terminal.
+
+### How to implement it yourself (The System Calls)
+
+If you are writing your shell launcher in C (or using Node's FFI to call C), here are the steps to "TTY it" properly:
+
+#### 1. Open the Master
+
+Use `posix_openpt(O_RDWR)`. This asks the kernel for a new pseudo-terminal master.
+
+* Call `grantpt()` and `unlockpt()` to prepare the slave side.
+* Call `ptsname()` to get the path to the slave (e.g., `/dev/pts/4`).
+
+#### 2. Fork the Child
+
+Call `fork()`.
+
+#### 3. In the Child (The Shell)
+
+Before you `exec` your shell loop:
+
+* **Disconnect from the parent:** Call `setsid()` to create a new session. This is the magic step that makes the process a "session leader."
+* **Open the Slave:** Open the path you got from `ptsname()` (e.g., `/dev/pts/4`).
+* **Set Controlling Terminal:** Use `ioctl(fd, TIOCSCTTY, 0)`. This tells the kernel, "This TTY is now the boss of this session."
+* **Redirect Standard FDs:** Use `dup2` to make the slave FD your `stdin` (0), `stdout` (1), and `stderr` (2).
+* **Exec:** Now run your shell process.
+
+#### 4. In the Parent (Electron Backend)
+
+You now have the **Master FD**.
+
+* Anything you `write()` to the Master, the Shell receives as `stdin`.
+* Anything the Shell prints to `stdout` appears as something you can `read()` from the Master.
+
+---
+
+### Why this makes `ssh` and `top` work
+
+When `ssh` starts up, it calls an `ioctl` check on its `stdin`.
+
+* **Raw Pipe:** The kernel says "This is a pipe." SSH says "Nope, I need a TTY."
+* **PTY Slave:** The kernel says "This is a character device (`/dev/pts/X`)." SSH is happy.
+
+### The "Electron" Difficulty
+
+The challenge with Electron is that Node.js's standard `child_process` module doesn't give you a way to call `setsid()` or `TIOCSCTTY` easily between the `fork` and the `exec`.
+
+**If you want to keep it "Package Free," you have two choices:**
+
+1. **Write a small C wrapper:** Create a 20-line C program that handles the PTY setup and then `execs` your shell. Your Electron app just talks to that C program.
+2. **Use Node `fs` on `/dev/ptmx`:** You can manually open `/dev/ptmx` (the master multiplexer) in Node, but you will still struggle to perform the `ioctl` calls without a native C binding.
+
+**Would you like to see the C code to create this "PTY wrapper" so your shell can run inside it?**
+
+
+
+================================================================
+UNIX SHELL COMMAND LIST (CORE BINARIES & BUILT-INS)
+================================================================
+
+--- SHELL BUILT-INS ---
+(Implemented inside the shell code; changes shell state)
+cd          - Change the current working directory
+exit        - Terminate the shell process
+export      - Set environment variables (e.g., PATH)
+unset       - Remove environment variables
+alias       - Create shortcuts for commands
+history     - Show recently executed commands
+type        - Indicate how a name would be interpreted as a command
+bg / fg     - Resume jobs in background or foreground
+jobs        - List active jobs managed by the shell
+
+--- FILE & DIRECTORY OPERATIONS (External) ---
+ls          - List directory contents
+cp          - Copy files or directories
+mv          - Move or rename files
+rm          - Remove files or directories
+mkdir       - Create a new directory
+rmdir       - Remove an empty directory
+touch       - Create empty file or update timestamps
+ln          - Create hard or soft links
+pwd         - Print name of current/working directory
+
+--- TEXT PROCESSING (External) ---
+cat         - Concatenate and print files to stdout
+grep        - Search for patterns in files
+head        - Output the first part of files
+tail        - Output the last part of files
+less        - View file contents one page at a time
+sort        - Sort lines of text files
+uniq        - Report or omit repeated lines
+wc          - Print newline, word, and byte counts
+diff        - Compare files line by line
+sed         - Stream editor for filtering/transforming text
+awk         - Pattern scanning and processing language
+
+--- SYSTEM & PROCESS MANAGEMENT (External) ---
+ps          - Report a snapshot of current processes
+kill        - Send a signal to a process (e.g., SIGTERM)
+chmod       - Change file mode bits (permissions)
+chown       - Change file owner and group
+sudo        - Execute a command as another user (superuser)
+whoami      - Print effective user ID
+uptime      - Tell how long the system has been running
+uname       - Print system information
+df          - Report file system disk space usage
+
+--- NETWORKING & UTILITIES (External) ---
+ping        - Send ICMP ECHO_REQUEST to network hosts
+curl / wget - Transfer data from or to a server
+ssh         - OpenSSH SSH client (remote login)
+man         - Format and display the on-line manual pages
+find        - Search for files in a directory hierarchy
+which       - Locate a command in the PATH
+xargs       - Build and execute command lines from standard input
+================================================================
+
+zed 
+cursor

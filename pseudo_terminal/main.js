@@ -24,6 +24,7 @@ function createWindow() {
   });
 
   // Start your binary
+  //todo fix shell env path
   shellProc = spawn(shellBin);
 
   shellProc.stdout.on("data", (data) => {

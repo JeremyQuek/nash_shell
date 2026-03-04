@@ -98,7 +98,7 @@
                 if (isShell) {
                     // Shell/System is "thinking" - No prompt character, just the block
                     line.innerHTML =
-                        '<span class="loading-box" id="active-cursor"></span>';
+                        '<span id="mirror-text"></span><span class="loading-box" id="active-cursor"></span>';
                 } else {
                     // Standard User Input - Includes the ">" and the mirror span for typing
                     line.innerHTML =
@@ -174,7 +174,7 @@
                     }
 
                     if (cmd.trim() !== "") {
-                        input.disabled = true;
+                        // input.disabled = true;
                         window.electronAPI.sendInput(cmd);
 
                         // --- THE ADDITION ---

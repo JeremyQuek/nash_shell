@@ -6,7 +6,12 @@ let mainWindow;
 let shellProc;
 let shellBin = "../src/shell/shell";
 
-const os = require("os"); // Add this at the top
+const os = require("os"); 
+
+//tdl:
+// Display current directory
+// Make the shell wait until parent completes
+// allow continuous writes to cout
 
 function createWindow() {
   mainWindow = new BrowserWindow({

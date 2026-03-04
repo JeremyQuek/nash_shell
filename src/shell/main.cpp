@@ -6,11 +6,19 @@
 #include <unistd.h>
 #include <filesystem>
 
+#include <poll.h>
+#include <termios.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+
+#include <signal.h>
 #include "builtin.h"
 #include "tokenizer.h"
+#include "program.h"
 #include "command_table.h"
 #include "system/sys_setup.h"
-#include "system/subprocess.h"
+
+
 
 // Set namespace
 using namespace std;
@@ -21,14 +29,20 @@ extern "C" char **environ;
 fs::path WORK_DIR = fs::current_path();
 unordered_map<string, Cmd> cmd_table;         //builtin commands
 vector<fs::path> sys_paths;                   //paths as std::fs::path cause we need to validate dynamic path
-unordered_map<string, string> hash_table;     //paths string since we validate it on initialisation
+unordered_map<string, string> hash_table;     //paths as string since we validate it on initialisation
+
+void flush_stdin();
 
 int main() {setvbuf(stdout, NULL, _IONBF, 0);   
     init_table(cmd_table);
     init_sys_cache();
 
+    signal(SIGINT, SIG_IGN);  
+    signal(SIGTSTP, SIG_IGN);
+
     string line;
     while (true) {
+        flush_stdin();
         if (!getline(cin, line)) break;  
 
         Tokenizer tok(line);
@@ -36,16 +50,6 @@ int main() {setvbuf(stdout, NULL, _IONBF, 0);
         vector<string>& tokens = tok.input_tokens;
         string& cmd = tokens[0];
 
-        if (cmd=="git") {
-            pid_t pid = fork();
-            if (pid==0) {
-                execve("/opt/homebrew/bin/git", tok.argv, environ);
-            } else {
-                int status;
-                waitpid(pid, &status, 0);
-            }
-            continue;
-            }
         auto it = cmd_table.find(cmd);
         if (it != cmd_table.end()) {
             it->second.handler(tok);
@@ -55,127 +59,26 @@ int main() {setvbuf(stdout, NULL, _IONBF, 0);
                 start_process(executable_path, tok.argv);
             }
             else {
-                cout << "[SYSTEM_ERR] UNKNOWN SIGNAl:" << cmd << endl;
+                cout << "[SYSTEM_ERR] UNKNOWN SIGNAl:" << cmd;
             }
         }
+        cout<<endl;
     }
     return 0;
 }
 
 
 
-
-
-
-
-
-
-// if (cmd=="python") {
-//     pid_t pid = fork();
-//     if (pid==0) {
-//         execve("/usr/local/bin/python", tok.argv, environ);
-//     } else {
-//         int status;
-//         waitpid(pid, &status, 0);
-//     }
-//     continue;
-// }
-
-// if (cmd=="ssh") {
-//     pid_t pid = fork();
-//     if (pid==0) {
-//         execve("/usr/bin/ssh", tok.argv, environ);
-//     } else {
-//         int status;
-//         waitpid(pid, &status, 0);
-//     }
-//     continue;
-// }
-// if (cmd=="top") {
-//     pid_t pid = fork();
-//     if (pid==0) {
-//         execve("/usr/bin/top", tok.argv, environ);
-//     } else {
-//         int status;
-//         waitpid(pid, &status, 0);
-//     }
-//     continue;
-// }
-
-// if (cmd=="ls") {
-//     pid_t pid = fork();
-//     if (pid==0) {
-//         execve("/bin/ls", tok.argv, environ);
-//     } else {
-//         int status;
-//         waitpid(pid, &status, 0);
-//     }
-//     continue;
-// }
-
-// if (cmd=="git") {
-//     pid_t pid = fork();
-//     if (pid==0) {
-//         execve("/usr/bin/git", tok.argv, environ);
-//     } else {
-//         int status;
-//         waitpid(pid, &status, 0);
-//     }
-//     continue;
-// }
-
-// if (cmd=="grep") {
-//     pid_t pid = fork();
-//     if (pid==0) {
-//         execve("/usr/bin/grep", tok.argv, environ);
-//     } else {
-//         int status;
-//         waitpid(pid, &status, 0);
-//     }
-//     continue;
-// }
-
-// if (cmd=="cat") {
-//     pid_t pid = fork();
-//     if (pid==0) {
-//         execve("/bin/cat", tok.argv, environ);
-//     } else {
-//         int status;
-//         waitpid(pid, &status, 0);
-//     }
-//     continue;
-// }
-// if (cmd=="mv") {
-//     pid_t pid = fork();
-//     if (pid==0) {
-//         execve("/bin/mv", tok.argv, environ);
-//     } else {
-//         int status;
-//         waitpid(pid, &status, 0);
-//     }
-//     cout<<endl;
-//     continue;
-// }
-
-// if (cmd=="rm") {
-//     pid_t pid = fork();
-//     if (pid==0) {
-//         execve("/bin/rm", tok.argv, environ);
-//     } else {
-//         int status;
-//         waitpid(pid, &status, 0);
-//     }
-//     cout<<endl;
-//     continue;
-// }
-// if (cmd=="mkdir") {
-//     pid_t pid = fork();
-//     if (pid==0) {
-//         execve("/bin/mkdir", tok.argv, environ);
-//     } else {
-//         int status;
-//         waitpid(pid, &status, 0);
-//     }
-//     cout<<endl;
-//     continue;
-// }
+void flush_stdin() {
+    cin.clear();
+    struct pollfd pfd;
+    pfd.fd = STDIN_FILENO;
+    pfd.events = POLLIN;
+    // "Drain" while there is data to be read
+    // poll returns > 0 if there is data, 0 if timeout, < 0 on error
+    while (poll(&pfd, 1, 0) > 0) {
+        char c;
+        if (read(STDIN_FILENO, &c, 1) <= 0) break; 
+    }
+    cin.sync();
+}

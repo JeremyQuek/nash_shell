@@ -8,7 +8,7 @@
 #include "builtin.h"
 #include "tokenizer.h"
 #include "command_table.h"
-#include "./system/subprocess.h"
+#include "program.h"
 
 using namespace std;
 namespace fs = filesystem;
@@ -18,39 +18,38 @@ extern unordered_map<string, Cmd> cmd_table;         //builtin commands
 extern unordered_map<string, string> hash_table;    //paths string since we validate it on initialisation
 
 void pwd_command() {
-    cout << WORK_DIR.string() << endl;
+    cout << WORK_DIR.string();
 }
 
 void echo_command(const string& input) {
-    cout<<input.substr(5,input.size()-5)<<endl;
+    cout<<input.substr(5,input.size()-5);
 }
 
 void which_command(const vector<string>& input) {
     string cmd = input[1];
     auto it = cmd_table.find(cmd);
     if (it != cmd_table.end()) {
-        cout << cmd << ": shell built-in command" << endl;
+        cout << cmd << ": shell built-in command";
         return;
     }
 
     auto table_it = hash_table.find(cmd);
     if (table_it != hash_table.end()) {
-        cout << table_it->second << endl;
+        cout << table_it->second;
         return;
     }
 
     string found_cmd;
     if (resolve_path(cmd, found_cmd)) {
-        cout << found_cmd << endl;
+        cout << found_cmd;
         return;
     }
 
-    cout << "[SYSTEM_ERR] COMMAND NOT FOUND: " << cmd << endl;
+    cout << "[SYSTEM_ERR] COMMAND NOT FOUND: " << cmd;
 }
 
 void cd_command(const vector<string>& input) {
     if (input.size()==1) {
-        cout<<endl;
         return;
     }
 
@@ -60,7 +59,7 @@ void cd_command(const vector<string>& input) {
         fs::path target = (WORK_DIR / cd_path);
         if (fs::exists(target)) {
             if (!fs::is_directory(target)) {
-                cout<<"[SYSTEM_ERR] NOT A DIRECTORY: "<<cd_path<<endl;
+                cout<<"[SYSTEM_ERR] NOT A DIRECTORY: "<<cd_path;
             }
             else{
                 WORK_DIR = fs::canonical(target);
@@ -68,11 +67,11 @@ void cd_command(const vector<string>& input) {
                 cout<<endl;
             }
         } else {
-            cout<<"[SYSTEM_ERR] NO SUCH FILE OR DIRECTORY: "<<cd_path<<endl;
+            cout<<"[SYSTEM_ERR] NO SUCH FILE OR DIRECTORY: "<<cd_path;
         }
     } 
     catch(exception) {
-        cout<<endl;
+        return;
     }
 }
 

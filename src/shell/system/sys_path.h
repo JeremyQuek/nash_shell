@@ -27,23 +27,3 @@
     cursor_path = "/usr/local/bin/cursor"
 #endif
 
-
-//nohup
-//python
-//java
-//go
-//clang++
-//g++
-//clang
-//gcc
-//ln
-//touch
-//open
-
-
-
-
-//HARD
-//top
-//nano
-//ssh

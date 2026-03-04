@@ -49,7 +49,6 @@ void load_cache(){
 }
 
 //todo fix shell env path
-
 void load_paths() {
     std::ifstream file("../src/shell/system/sys_path.alias");
     if (!file.is_open()) {

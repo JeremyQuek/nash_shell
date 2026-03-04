@@ -3,9 +3,11 @@
 #include <vector>
 #include <filesystem>
 #include <iostream>
+#include <fcntl.h>
+#include <signal.h>
 
 #include <sys/wait.h>
-#include "subprocess.h"
+#include "program.h"
 
 using namespace std;
 namespace fs = filesystem;
@@ -22,7 +24,7 @@ bool resolve_path(string&cmd, string& executable_path)  {
 
     for (const auto& path: sys_paths) { 
         try {
-            fs::path target = path / cmd;;
+            fs::path target = path / cmd;
             if ((fs::exists(target)) && !(fs::is_directory(target))) {
                 executable_path = fs::absolute(target);
                 return true;
@@ -37,17 +39,12 @@ bool resolve_path(string&cmd, string& executable_path)  {
 
 
 void start_process(string& executable_path, char** argv) {
-    cout<<executable_path<<endl;
     pid_t pid = fork();
-
     if (pid == 0) {
-        // CHILD PROCESS
-        // Use our local copy's pointers. Since it's a child, 
-        // it has its own copy of the 'args' vector memory.
+        signal(SIGINT, SIG_DFL);  
+        signal(SIGTSTP, SIG_DFL);
         if (execve(executable_path.c_str(), argv, environ) == -1) {
             perror("[SYSTEM_ERR] (execve)");
-            // If execve fails, we MUST exit the child. 
-            // Otherwise, it returns to the while loop in main()!
             _exit(EXIT_FAILURE); 
         }
     } 
